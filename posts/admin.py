@@ -27,13 +27,13 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ["title", "slug", "created_time"]
 
 
-
 class ContactAdmin(admin.ModelAdmin):
     list_display = ["pk", "name"]
-    search_fields = ["created_time", "is_answered",'answer_time']
-    inlines=[AnswerInline]
+    search_fields = ["created_time", "is_answered", "answer_time"]
+    list_filter = ["is_answered"]
+    inlines = [AnswerInline]
 
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Comment)
-admin.site.register(Contact,ContactAdmin)
+admin.site.register(Contact, ContactAdmin)
