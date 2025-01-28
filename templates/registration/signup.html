@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% block content %}
+    <style>
+        .form-container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px; /* افزایش عرض فرم */
+            margin: auto;
+            border-style: dotted;
+        }
+        
+        .form-control {
+            padding: 15px; /* افزایش فاصله داخلی */
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            width: 100%; /* عریض‌تر شدن input ها */
+        }
+        #signup{
+            width: 100%;
+            font-weight: bold;
+            font-size: 20px;
+        }
+        
+    </style>
+
+    <div class="form-container">
+        <h1>ثبت‌نام</h1>
+        <form action="" method="post" novalidate>
+            {% csrf_token %}
+            {{ form|crispy}}
+            <button type="submit" class="btn btn-primary" id="signup">ثبت‌نام</button>
+        </form>
+        <div class="form-footer">
+            <p>قبلاً حساب دارید؟ <a href="{% url 'login' %}">ورود</a></p>
+        </div>
+    </div>
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+{% endblock content %}

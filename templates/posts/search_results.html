@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}نتایج جستجو{% endblock %}
+
+{% block content %}
+<style>
+    img{
+        width: 300px;
+        height: 200px;
+        margin: 20px;
+        padding: 10px;
+    }
+</style>
+    <div class="container">
+        <h1>نتایج جستجو برای: "{{ request.GET.q }}"</h1>
+
+        {% if result %}
+            <ul class="list-group">
+                {% for post in result %}
+                    <li class="list-group-item">
+                        <a href="{{ post.get_absolute_url }}"> 
+                            <img src="{{post.image.url}}">
+                            <h2>{{ post.title }}</h2>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>متاسفانه هیچ نتیجه‌ای پیدا نشد.</p>
+        {% endif %}
+    </div>
+{% endblock %}

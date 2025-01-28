@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+  اطلاعات نویسندگان
+{% endblock title %}
+
+{% block content %}
+<h1>مقالات کاربران</h1>
+
+{% for item in users_with_posts %}
+    <div>
+        <h2>مقالات {{ item.user.username }}</h2>
+        {% if item.posts %}
+            <ul>
+                {% for post in item.posts %}
+                    <li>
+                        <a href="{% url 'Post_detail' post.id %}">{{ post.title }}</a>
+                        <p>{{ post.created_time }}</p>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>این کاربر مقاله‌ای ندارد.</p>
+        {% endif %}
+    </div>
+    <hr>
+{% endfor %}
+
+{% endblock content %}

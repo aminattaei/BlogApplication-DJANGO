@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <style>
+        h1 {
+            text-align: center;
+            margin: 20px auto;
+        }
+        form {
+            padding: 25px;
+            max-width: 400px;
+            margin: auto;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        body {
+            direction: rtl;
+            text-align: right;
+        }
+        #login {
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+        }
+    </style>
+    <h1>ورود به سایت</h1>
+    <hr>
+    <form action="" method="post" novalidate>        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" id="login" class="btn btn-success">ورود</button>
+    </form>
+    <br><br><br>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+            <div class="alert {% if message.tags %}alert-{{ message.tags }}{% else %}alert-info{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+{% endblock content %}

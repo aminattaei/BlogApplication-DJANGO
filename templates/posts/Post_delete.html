@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+  حذف مقاله {{post.title}}
+{% endblock title %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="card border-danger">
+        <div class="card-header bg-danger text-white">
+            <h1 class="h4">حذف مقاله</h1>
+        </div>
+        <div class="card-body">
+            <p class="text-danger">
+                آیا از حذف کردن این مقاله مطمئن هستید؟ این عمل غیرقابل بازگشت است. ادامه می‌دهید؟
+            </p>
+            <form action="" method="post">
+                {% csrf_token %}
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-danger me-2">حذف مقاله</button>
+                    <a href="{% url 'Post_list' %}" class="btn btn-secondary">لغو</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<br><br><br><br><br>
+{% endblock content %}

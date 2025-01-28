@@ -1,0 +1,211 @@
+{% extends "base.html" %}
+{% load custom_tags %}
+
+{% block title %}
+  {{post.title}} - جزییات مقاله
+{% endblock title %}
+
+{% block content %}
+
+<style>
+/* تنظیم تصویر */
+#img {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    object-fit: cover; /* برش تصویر برای تطبیق با ابعاد */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+}
+
+/* استایل کلی صفحه */
+.all {
+    width: 100%;
+    text-align: center;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.mainheading {
+    margin: 20px auto;
+}
+
+.article-post {
+    text-align: justify;
+    margin: 20px auto;
+}
+
+.featured-image {
+    max-width: 100%;
+    height: auto;
+}
+
+/* استایل دکمه‌ها */
+.btn-primary, .btn-danger {
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+}
+
+/* استایل تگ‌ها */
+.after-post-tags ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.after-post-tags ul li {
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.after-post-tags ul li a {
+    text-decoration: none;
+    color: #007bff;
+    font-weight: bold;
+}
+
+/* استایل نظرات */
+.comments-section h3 {
+    margin-top: 40px;
+    font-size: 1.8rem;
+    color: #333;
+}
+
+.comment {
+    background-color: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.comment strong {
+    font-size: 1.1rem;
+    color: #007bff;
+}
+
+.comment p {
+    font-size: 1rem;
+    color: #555;
+}
+
+/* استایل فرم ارسال نظر */
+form {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
+}
+
+form button {
+    border-radius: 30px;
+    padding: 10px 20px;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+form button:hover {
+    background-color: #007bff;
+    color: #fff;
+}
+</style>
+
+<div class="all">
+    {% for message in messages %}
+        <div class="alert alert-info">{{ message }}</div>
+    {% endfor %}
+    <div class="container">
+        <div class="row">
+            <!-- بخش مقاله -->
+            <div class="col-md-12 col-xs-12">
+                <div class="mainheading">
+                    <!-- اطلاعات نویسنده -->
+                    <div class="row post-top-meta">
+                        <div class="col-md-2">
+                            <a href="author.html">
+                                <img class="author-thumb" src="https://www.gravatar.com/avatar/e56154546cf4be74e393c62d1ae9f9d4?s=250&amp;d=mm&amp;r=x" alt="Author">
+                            </a>
+                        </div>
+                        <div class="col-md-10">
+                            <a class="link-dark" href="author.html">{{ post.author }}</a>
+                            <span class="author-description">{{ post.content|slice:150 }}</span>
+                            <span class="post-date">{{ post.created_time|date:"j F Y" }}</span><span class="dot"></span>
+                        </div>
+                    </div>
+                    <br>
+                    <h1 class="posttitle">{{ post.title }}</h1>
+                    <br>
+                    {% if user|is_author_or_superuser:post.author.username %}
+                    <div class="my-3 d-flex justify-content-center">
+                        <a href="{% url 'Post_update' post.pk %}" class="btn btn-primary mx-2">ویرایش مقاله</a>
+                        <a href="{% url 'Post_delete' post.pk %}" class="btn btn-danger mx-2">حذف مقاله</a>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- تصویر مقاله -->
+                <img id="img" class="featured-image img-fluid" src="{{ post.image.url }}" alt="Post Image">
+
+                <!-- محتوای مقاله -->
+                <div class="article-post">
+                    <p>
+                        {{ post.content }}
+                    </p>
+                </div>
+
+                <!-- برچسب‌ها -->
+                <div class="after-post-tags">
+                    <ul class="tags">
+                        {% for tag in tags %}
+                        <li><a href="#">{{ tag }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr>
+
+    <!-- بخش نظرات -->
+    <div class="comments-section">
+        <h3>نظرات</h3>
+
+        <!-- نمایش نظرات موجود -->
+        {% for comment in comments %}
+        <div class="comment">
+            <p><strong>{{ comment.name }}</strong> گفت:</p>
+            <p>{{ comment.message }}</p>
+        </div>
+        {% empty %}
+        <p>هنوز نظری برای این پست ثبت نشده است.</p>
+        {% endfor %}
+
+        <!-- فرم ارسال نظر -->
+        <h4>نظر خود را بنویسید:</h4>
+        <form method="POST">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">ارسال نظر</button>
+        </form>
+    </div>
+</div>
+
+{% endblock content %}

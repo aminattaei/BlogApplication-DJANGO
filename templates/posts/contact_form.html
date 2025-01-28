@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+  باما ارتباط برقرار کنید
+{% endblock title %}
+
+{% block content %}
+  <h1>با ما از اینجا در ارتباط باشید</h1>
+  <hr>
+  <form action="" method="post">
+    {% csrf_token %}
+    {{form|crispy}}
+    <button type="submit" class="btn btn-primary">ثبت</button>
+  </form>
+{% endblock content %}
