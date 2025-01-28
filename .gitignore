@@ -64,3 +64,5 @@ coverage.xml
 # Python environment files
 pip-log.txt
 pip-delete-this-directory.txt
+
+.md
