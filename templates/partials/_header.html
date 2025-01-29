@@ -20,7 +20,7 @@
 <link href="https://fonts.googleapis.com/css?family=Righteous" rel="stylesheet">
 <!-- Custom styles for this template -->
 <link href="{% static 'css/mediumish.css' %}" rel="stylesheet">
-</head><br><br>
+</head>
 <body style="direction: rtl;">
 
 	<style>
@@ -58,68 +58,56 @@
 	</style>
 	
 
-<!-- Begin Nav
-================================================== -->
-<ul class="nav">
-    <li class="nav-item">
-        <a class="nav-link active" href="{% url 'Post_list' %}">صفحه اصلی</a>
-    </li>
-
-	<!-- Search Bar -->
-	<li class="nav-item ml-auto">
-        <form class="form-inline my-2 my-lg-0" action="{% url 'search_results' %}" method="get">
-            <input class="form-control mr-sm-2" type="search" placeholder="جستجو" aria-label="Search" name="q">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">جستجو</button>
-        </form>
-
-    </li>
-    <li class="nav-item">
-        <a class="nav-link active" href="{% url 'Post_all_users_posts' %}">نویسندگان</a>
-    </li>
-    {% if user.is_authenticated %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'Post_create' %}">مقاله جدید</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'password_change' %}"> تغییر گذروازه</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'password_reset' %}"> فراموشی گذروازه</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" href="{% url 'contact_view' %}">ارتباط با تیم سازنده</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link active" href="#">سلام {{user.username}} خوش آمدید! </a>
-        </li>
-        <form method="post" action="{% url 'logout' %}" style="display:inline;">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger btn-lg font-weight-bold" style="border-radius: 25px; padding: 10px 20px; transition: all 0.3s;">
-                خروج
-            </button>
-        </form>
-    {% else %}
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'signup' %}">ثبت نام</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" href="{% url 'login' %}">ورود</a>
-        </li>
-    {% endif %}
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="{% url 'Post_list' %}">وبلاگ امین</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'Post_list' %}">صفحه اصلی</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'Post_all_users_posts' %}">نویسندگان</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'contact_view' %}">ارتباط با تیم سازنده</a>
+                </li>
+            </ul>
+            <form class="form-inline my-2 my-lg-0" action="{% url 'search_results' %}" method="get">
+                <input class="form-control mr-sm-2" type="search" placeholder="جستجو" name="q">
+                <button class="btn btn-outline-success" type="submit">جستجو</button>
+            </form>
+            <ul class="navbar-nav ml-auto">
+                {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">سلام {{ user.username }}!</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'Post_create' %}">مقاله جدید</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'password_change' %}">تغییر گذرواژه</a>
+                    </li>
+                    <li class="nav-item">
+                        <form method="post" action="{% url 'logout' %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger">خروج</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'signup' %}">ثبت نام</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">ورود</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
     
-   
-</ul>
-<!-- End Nav
-================================================== -->
-
-
-
-
-
-
-
-
-
 
 <!-- Begin Site Title
 ================================================== -->
