@@ -23,10 +23,14 @@ from .serializers import PostSerializer, CommentSerializer, ContactSerializer
 
 
 def approve_article(request, post_id):
-    post = Post.objects.get(id=post_id)
-    post.is_approved = True
-    post.save()
-    return redirect("post_list")
+    try:
+        post = Post.objects.get(id=post_id)
+        post.is_approved = True
+        post.save()
+        return redirect("post_list")
+    except Post.DoesNotExist:
+        messages.error(request, "مقاله پیدا نشد.")
+        return redirect("post_list")
 
 
 class BlogHomeListView(ListView):
@@ -98,83 +102,88 @@ class AllUsersPostsView(TemplateView):
 
 
 def Post_list(request: Request):
-    if request.method == "GET":
-        posts = Post.objects.all()
-        serializer = PostSerializer(posts, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    try:
+        if request.method == "GET":
+            posts = Post.objects.all()
+            serializer = PostSerializer(posts, many=True)
+            return JsonResponse(serializer.data, safe=False)
 
-    elif request.method == "POST":
-        data = JSONParser().parse(request)
-        serializer = PostSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+        elif request.method == "POST":
+            data = JSONParser().parse(request)
+            serializer = PostSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data, status=201)
+            return JsonResponse(serializer.errors, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"خطا در انجام درخواست: {str(e)}"}, status=500)
 
 
 def Comment_list(request: Request):
-    if request.method == "GET":
-        comments = Comment.objects.all()
-        serializer = CommentSerializer(comments, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    try:
+        if request.method == "GET":
+            comments = Comment.objects.all()
+            serializer = CommentSerializer(comments, many=True)
+            return JsonResponse(serializer.data, safe=False)
 
-    elif request.method == "POST":
-        data = JSONParser().parse(request)
-        serializer = CommentSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+        elif request.method == "POST":
+            data = JSONParser().parse(request)
+            serializer = CommentSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data, status=201)
+            return JsonResponse(serializer.errors, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"خطا در انجام درخواست: {str(e)}"}, status=500)
 
 
 def Contact_list(request: Request):
-    if request.method == "GET":
-        contacts = Comment.objects.all()
-        serializer = ContactSerializer(contacts, many=True)
-        return JsonResponse(serializer.data, safe=False)
+    try:
+        if request.method == "GET":
+            contacts = Comment.objects.all()
+            serializer = ContactSerializer(contacts, many=True)
+            return JsonResponse(serializer.data, safe=False)
 
-    elif request.method == "POST":
-        data = JSONParser().parse(request)
-        serializer = ContactSerializer(data=data)
-        if serializer.is_valid():
-            serializer.save()
-            return JsonResponse(serializer.data, status=201)
-        return JsonResponse(serializer.errors, status=400)
+        elif request.method == "POST":
+            data = JSONParser().parse(request)
+            serializer = ContactSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return JsonResponse(serializer.data, status=201)
+            return JsonResponse(serializer.errors, status=400)
+    except Exception as e:
+        return JsonResponse({"error": f"خطا در انجام درخواست: {str(e)}"}, status=500)
 
 
 def Post_Detail(request, pk):
-    post = get_object_or_404(Post, id=pk, is_approved=True)
-    comments = Comment.objects.filter(blog=post)
-    form = CommentForm()
-    if request.method == "POST":
-        form = CommentForm(request.POST)
-        if form.is_valid():
-            if not request.user.is_authenticated:
-                messages.error(
-                    request, "اول باید وارد حساب کاربری‌ات بشی، بعد کامنت بذاری!"
-                )
+    try:
+        post = get_object_or_404(Post, id=pk, is_approved=True)
+        comments = Comment.objects.filter(blog=post)
+        form = CommentForm()
+        if request.method == "POST":
+            form = CommentForm(request.POST)
+            if form.is_valid():
+                if not request.user.is_authenticated:
+                    messages.error(request, "اول باید وارد حساب کاربری‌ات بشی، بعد کامنت بذاری!")
+                    return HttpResponseRedirect(request.path_info)
+
+                obj = form.save(commit=False)
+                obj.user = request.user
+                obj.name = request.user.username
+                obj.email = request.user.email
+                obj.blog = post
+                obj.save()
+
+                messages.success(request, "کامنتت با موفقیت ثبت شد، مرسی رفیق! 😊")
                 return HttpResponseRedirect(request.path_info)
+            else:
+                messages.error(request, "یه مشکلی پیش اومده، دوباره امتحان کن!")
 
-            obj = form.save(commit=False)
-            obj.user = request.user
-            obj.name = request.user.username
-            obj.email = request.user.email
-            obj.blog = post
-            obj.save()
-
-            messages.success(request, "کامنتت با موفقیت ثبت شد، مرسی رفیق! 😊")
-            return HttpResponseRedirect(request.path_info)
-        else:
-            messages.error(request, "یه مشکلی پیش اومده، دوباره امتحان کن!")
-
-    context = {"form": form, "post": post, "comments": comments}
-    return render(request, "posts/Post_detail.html", context)
-
-
-# class ContactFormView(LoginRequiredMixin, FormView):
-#     template_name = "posts/contact_form.html"
-#     form_class = ContactForm
-#     success_url = "/contact_done/"
+        context = {"form": form, "post": post, "comments": comments}
+        return render(request, "posts/Post_detail.html", context)
+    except Exception as e:
+        messages.error(request, f"خطا در بارگذاری پست: {str(e)}")
+        return redirect("Post_list")
 
 
 class ContactFormView(LoginRequiredMixin, CreateView):
@@ -193,29 +202,44 @@ class ContactDoneTemplateView(LoginRequiredMixin, TemplateView):
 
 
 def Search(request):
-    result = []
-    if request.method == "GET":
-        search_query = request.GET.get("q", "")
-        if search_query:
-            result = Post.objects.filter(title__icontains=search_query)
-        context = {"result": result}
-    return render(request, "posts/search_results.html", context)
+    try:
+        query = request.GET.get('q', '').strip()
+
+        if not query:
+            return render(request, 'posts/search_results.html', {'error': 'لطفاً یک کلمه جستجو وارد کنید.'})
+
+        articles = Post.objects.filter(title__icontains=query, is_approved=True)
+        if articles.exists():
+            return render(request, 'posts/search_results.html', {'articles': articles})
+
+        articles = Post.objects.filter(title__icontains=query)
+        if articles.exists():
+            return render(request, 'posts/search_results.html', {'articles': articles})
+
+        return render(request, 'posts/search_results.html', {'error': 'هیچ مقاله‌ای با این عنوان پیدا نشد.'})
+
+    except Exception as e:
+        return render(request, 'posts/search_results.html', {'error': f"خطا در انجام جستجو: {str(e)}. لطفاً دوباره تلاش کنید."})
 
 
 @login_required
 def profile(request):
-    articles = Post.objects.filter(author=request.user)
-    
-    approved_count = articles.filter(is_approved=True).count()
-    rejected_count = articles.filter(is_approved=False).count()
-    pending_count = articles.filter(is_approved=None).count()
+    try:
+        articles = Post.objects.filter(author=request.user)
 
-    context = {
-        'user': request.user,
-        'approved_count': approved_count,
-        'rejected_count': rejected_count,
-        'pending_count': pending_count,
-        'articles': articles
-    }
+        approved_count = articles.filter(is_approved=True).count()
+        rejected_count = articles.filter(is_approved=False).count()
+        pending_count = articles.filter(is_approved=None).count()
 
-    return render(request, 'posts/profile.html', context)
+        context = {
+            'user': request.user,
+            'approved_count': approved_count,
+            'rejected_count': rejected_count,
+            'pending_count': pending_count,
+            'articles': articles
+        }
+        return render(request, 'posts/profile.html', context)
+
+    except Exception as e:
+        messages.error(request, f"خطا در بارگذاری پروفایل: {str(e)}")
+        return redirect('Post_list')

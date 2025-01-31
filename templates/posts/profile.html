@@ -37,7 +37,7 @@
                     {% for article in articles %}
                     <tr>
                         <td>{{ forloop.counter }}</td>
-                        <td>{{ article.title }}</td>
+                        <td><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></td>
                         <td>
                             {% if article.is_approved %}
                                 <span class="badge bg-success">تایید شده</span>
