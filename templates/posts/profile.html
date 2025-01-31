@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>پروفایل کاربری</h2>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <p><strong>نام کاربری:</strong> {{ user.username }}</p>
+            <p><strong>ایمیل:</strong> {{ user.email }}</p>
+            <p><strong>تاریخ عضویت:</strong> {{ user.date_joined }}</p>
+        </div>
+        <div class="col-md-8">
+            <h3>آمار مقالات</h3>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <strong>مقالات تایید شده:</strong> {{ approved_count }}
+                </li>
+                <li class="list-group-item">
+                    <strong>مقالات رد شده:</strong> {{ rejected_count }}
+                </li>
+                <li class="list-group-item">
+                    <strong>مقالات تایید نشده:</strong> {{ pending_count }}
+                </li>
+            </ul>
+            
+            <h4 class="mt-4">تمام مقالات</h4>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>عنوان مقاله</th>
+                        <th>وضعیت</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for article in articles %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ article.title }}</td>
+                        <td>
+                            {% if article.is_approved %}
+                                <span class="badge bg-success">تایید شده</span>
+                            {% elif article.is_approved == False %}
+                                <span class="badge bg-danger">رد شده</span>
+                            {% else %}
+                                <span class="badge bg-warning">تایید نشده</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

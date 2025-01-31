@@ -1,13 +1,14 @@
-from .models import Post, Comment, Tag, Contact
-from .form import CommentForm, ContactForm
+from .models import Post, Comment, Contact
+from .form import CommentForm, UserRegisterForm
 
+from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse, HttpResponseRedirect
-from django.views.generic.edit import FormView
+from django.contrib.auth import authenticate
 from django.views.generic import (
     ListView,
     UpdateView,
@@ -17,7 +18,8 @@ from django.views.generic import (
 )
 
 from rest_framework.parsers import JSONParser
-from .serializers import PostSerializer
+from rest_framework.request import Request
+from .serializers import PostSerializer, CommentSerializer, ContactSerializer
 
 
 def approve_article(request, post_id):
@@ -32,43 +34,10 @@ class BlogHomeListView(ListView):
     context_object_name = "posts"
     template_name = "posts/Post_index.html"
     paginate_by = 3
-    ordering = ["-created_time"]
+    ordering = ["-published_time"]
 
     def get_queryset(self):
         return Post.objects.filter(is_approved=True)
-
-
-# class BlogHomeDetailView(DetailView):
-#     model = Post
-#     template_name = "posts/Post_detail.html"
-#     context_object_name = "post"
-
-#     def get_context_data(self, **kwargs):
-#         context = super().get_context_data(**kwargs)
-#         post = self.object
-#         context["comments"] = Comment.objects.filter(blog=post)
-#         context["form"] = CommentForm()
-#         context["tags"] = Tag.objects.filter(postFore=post)
-#         return context
-
-#     def post(self, request, *args, **kwargs):
-#         post = self.get_object()
-#         form = CommentForm(request.POST)
-
-#         if form.is_valid():
-#             comment = form.save(commit=False)
-#             comment.blog = post
-#             comment.user = request.user
-#             comment.name = request.user.username
-#             comment.email = request.user.email
-#             comment.save()
-#             messages.success(request, "نظر شما با موفقیت ثبت شد!")
-#             return redirect("Post_detail", pk=post.pk)
-#         else:
-#             messages.error(
-#                 request, "مشکلی در ثبت نظر وجود دارد. لطفاً دوباره تلاش کنید."
-#             )
-#             return self.render_to_response(self.get_context_data(form=form))
 
 
 class BlogHomeDeleteView(LoginRequiredMixin, DeleteView):
@@ -128,10 +97,10 @@ class AllUsersPostsView(TemplateView):
         return context
 
 
-def Post_list(request):
+def Post_list(request: Request):
     if request.method == "GET":
-        snippets = Post.objects.all()
-        serializer = PostSerializer(snippets, many=True)
+        posts = Post.objects.all()
+        serializer = PostSerializer(posts, many=True)
         return JsonResponse(serializer.data, safe=False)
 
     elif request.method == "POST":
@@ -143,8 +112,38 @@ def Post_list(request):
         return JsonResponse(serializer.errors, status=400)
 
 
+def Comment_list(request: Request):
+    if request.method == "GET":
+        comments = Comment.objects.all()
+        serializer = CommentSerializer(comments, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+    elif request.method == "POST":
+        data = JSONParser().parse(request)
+        serializer = CommentSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
+def Contact_list(request: Request):
+    if request.method == "GET":
+        contacts = Comment.objects.all()
+        serializer = ContactSerializer(contacts, many=True)
+        return JsonResponse(serializer.data, safe=False)
+
+    elif request.method == "POST":
+        data = JSONParser().parse(request)
+        serializer = ContactSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return JsonResponse(serializer.data, status=201)
+        return JsonResponse(serializer.errors, status=400)
+
+
 def Post_Detail(request, pk):
-    post = get_object_or_404(Post, id=pk, is_approved=True)  # فقط مقاله تایید شده
+    post = get_object_or_404(Post, id=pk, is_approved=True)
     comments = Comment.objects.filter(blog=post)
     form = CommentForm()
     if request.method == "POST":
@@ -201,3 +200,22 @@ def Search(request):
             result = Post.objects.filter(title__icontains=search_query)
         context = {"result": result}
     return render(request, "posts/search_results.html", context)
+
+
+@login_required
+def profile(request):
+    articles = Post.objects.filter(author=request.user)
+    
+    approved_count = articles.filter(is_approved=True).count()
+    rejected_count = articles.filter(is_approved=False).count()
+    pending_count = articles.filter(is_approved=None).count()
+
+    context = {
+        'user': request.user,
+        'approved_count': approved_count,
+        'rejected_count': rejected_count,
+        'pending_count': pending_count,
+        'articles': articles
+    }
+
+    return render(request, 'posts/profile.html', context)

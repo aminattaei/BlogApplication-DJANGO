@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext as _
 from django.urls import reverse
 from django.conf import settings
-
+from django.contrib.auth import get_user_model
 
 class Category(models.Model):
     title = models.CharField(_("عنوان دسته بندی"), max_length=50)
@@ -62,7 +62,7 @@ class Post(models.Model):
         null=True,
     )
     tags = models.ManyToManyField(Tag, verbose_name=_("تگ ها"), default="تگ اول")
-    is_approved = models.BooleanField(_("تایید شده"), default=False)  # فیلد تایید
+    is_approved = models.BooleanField(_("تایید شده"), default=False)
 
     class Meta:
         verbose_name = _("مقاله")
@@ -73,6 +73,7 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse("Post_detail", kwargs={"pk": self.pk})
+
 
 
 class Comment(models.Model):
@@ -136,3 +137,12 @@ class Answer(models.Model):
 
     def __str__(self):
         return self.respondent_admin
+
+class Profile(models.Model):
+    user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
+    bio = models.TextField(blank=True, null=True)
+    birth_date = models.DateField(blank=True, null=True)
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} Profile"
