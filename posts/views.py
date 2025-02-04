@@ -20,6 +20,7 @@ from django.views.generic import (
 from rest_framework.parsers import JSONParser
 from rest_framework.request import Request
 from .serializers import PostSerializer, CommentSerializer, ContactSerializer
+from rest_framework import generics
 
 
 def approve_article(request, post_id):
@@ -164,7 +165,9 @@ def Post_Detail(request, pk):
             form = CommentForm(request.POST)
             if form.is_valid():
                 if not request.user.is_authenticated:
-                    messages.error(request, "اول باید وارد حساب کاربری‌ات بشی، بعد کامنت بذاری!")
+                    messages.error(
+                        request, "اول باید وارد حساب کاربری‌ات بشی، بعد کامنت بذاری!"
+                    )
                     return HttpResponseRedirect(request.path_info)
 
                 obj = form.save(commit=False)
@@ -203,23 +206,35 @@ class ContactDoneTemplateView(LoginRequiredMixin, TemplateView):
 
 def Search(request):
     try:
-        query = request.GET.get('q', '').strip()
+        query = request.GET.get("q", "").strip()
 
         if not query:
-            return render(request, 'posts/search_results.html', {'error': 'لطفاً یک کلمه جستجو وارد کنید.'})
+            return render(
+                request,
+                "posts/search_results.html",
+                {"error": "لطفاً یک کلمه جستجو وارد کنید."},
+            )
 
         articles = Post.objects.filter(title__icontains=query, is_approved=True)
         if articles.exists():
-            return render(request, 'posts/search_results.html', {'articles': articles})
+            return render(request, "posts/search_results.html", {"articles": articles})
 
         articles = Post.objects.filter(title__icontains=query)
         if articles.exists():
-            return render(request, 'posts/search_results.html', {'articles': articles})
+            return render(request, "posts/search_results.html", {"articles": articles})
 
-        return render(request, 'posts/search_results.html', {'error': 'هیچ مقاله‌ای با این عنوان پیدا نشد.'})
+        return render(
+            request,
+            "posts/search_results.html",
+            {"error": "هیچ مقاله‌ای با این عنوان پیدا نشد."},
+        )
 
     except Exception as e:
-        return render(request, 'posts/search_results.html', {'error': f"خطا در انجام جستجو: {str(e)}. لطفاً دوباره تلاش کنید."})
+        return render(
+            request,
+            "posts/search_results.html",
+            {"error": f"خطا در انجام جستجو: {str(e)}. لطفاً دوباره تلاش کنید."},
+        )
 
 
 @login_required
@@ -232,14 +247,22 @@ def profile(request):
         pending_count = articles.filter(is_approved=None).count()
 
         context = {
-            'user': request.user,
-            'approved_count': approved_count,
-            'rejected_count': rejected_count,
-            'pending_count': pending_count,
-            'articles': articles
+            "user": request.user,
+            "approved_count": approved_count,
+            "rejected_count": rejected_count,
+            "pending_count": pending_count,
+            "articles": articles,
         }
-        return render(request, 'posts/profile.html', context)
+        return render(request, "posts/profile.html", context)
 
     except Exception as e:
         messages.error(request, f"خطا در بارگذاری پروفایل: {str(e)}")
-        return redirect('Post_list')
+        return redirect("Post_list")
+
+
+from rest_framework import generics
+
+
+class PostDetail(generics.RetrieveAPIView):
+    queryset = Post.objects.all()
+    serializer_class = PostSerializer

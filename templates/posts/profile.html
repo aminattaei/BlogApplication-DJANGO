@@ -19,9 +19,6 @@
                 <li class="list-group-item">
                     <strong>مقالات رد شده:</strong> {{ rejected_count }}
                 </li>
-                <li class="list-group-item">
-                    <strong>مقالات تایید نشده:</strong> {{ pending_count }}
-                </li>
             </ul>
             
             <h4 class="mt-4">تمام مقالات</h4>
@@ -43,8 +40,6 @@
                                 <span class="badge bg-success">تایید شده</span>
                             {% elif article.is_approved == False %}
                                 <span class="badge bg-danger">رد شده</span>
-                            {% else %}
-                                <span class="badge bg-warning">تایید نشده</span>
                             {% endif %}
                         </td>
                     </tr>

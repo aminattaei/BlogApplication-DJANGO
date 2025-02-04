@@ -13,8 +13,9 @@ class CommentInline(admin.StackedInline):
 
 
 class PostAdmin(admin.ModelAdmin):
-    list_display = ("title", "author", "created_time")
+    list_display = ("title", "author", "is_approved", "created_time")
     inlines = [CommentInline]
+    list_filter = ["is_approved"]
 
 
 @admin.register(Category)
@@ -30,7 +31,7 @@ class TagAdmin(admin.ModelAdmin):
 class ContactAdmin(admin.ModelAdmin):
     list_display = ["pk", "name"]
     search_fields = ["created_time", "is_answered", "answer_time"]
-    list_filter = ["is_answered"]
+    list_filter = ["is_answered", "created_time"]
     inlines = [AnswerInline]
 
 
