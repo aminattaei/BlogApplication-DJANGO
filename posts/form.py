@@ -24,7 +24,7 @@ class CommentForm(forms.ModelForm):
             "message": forms.Textarea(attrs={
                 "placeholder": "نظر خود را بنویسید...",
                 "rows": 4,
-                "class": "form-control",  # کلاس Bootstrap برای استایل بهتر
+                "class": "form-control",
             }),
         }
 

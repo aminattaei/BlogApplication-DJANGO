@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 
+
 class Category(models.Model):
     title = models.CharField(_("عنوان دسته بندی"), max_length=50)
     description = models.TextField(_("توضیحات"), blank=True)  # حذف null=True
@@ -44,11 +45,18 @@ class Tag(models.Model):
         return reverse("Tag_detail", kwargs={"pk": self.pk})
 
 
+class PostManager(models.Manager):
+    def title(self, pk, title: str):
+        return self.filter(id=pk, title=title)
+
+
 class Post(models.Model):
     title = models.CharField(_("عنوان"), max_length=50)
     content = models.TextField(_("توضیحات"))
     author = models.ForeignKey(
-        settings.AUTH_USER_MODEL, verbose_name=_("نویسنده"), on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("نویسنده"),
+        on_delete=models.CASCADE,
     )
     created_time = models.DateTimeField(_("زمان ایجاد"), auto_now_add=True)
     published_time = models.DateTimeField(_("زمان تغییرات"), auto_now=True)
@@ -63,6 +71,7 @@ class Post(models.Model):
     )
     tags = models.ManyToManyField(Tag, verbose_name=_("تگ ها"), default="تگ اول")
     is_approved = models.BooleanField(_("تایید شده"), default=False)
+    objects = PostManager()
 
     class Meta:
         verbose_name = _("مقاله")
@@ -73,7 +82,6 @@ class Post(models.Model):
 
     def get_absolute_url(self):
         return reverse("Post_detail", kwargs={"pk": self.pk})
-
 
 
 class Comment(models.Model):
@@ -90,7 +98,10 @@ class Comment(models.Model):
     created_at = models.DateTimeField(_("زمان نوشتن نظر"), auto_now_add=True)
 
     user = models.ForeignKey(
-        settings.AUTH_USER_MODEL, verbose_name=_("کاربر"), on_delete=models.CASCADE
+        settings.AUTH_USER_MODEL,
+        verbose_name=_("کاربر"),
+        related_name="users",
+        on_delete=models.CASCADE,
     )
 
     class Meta:
@@ -138,11 +149,14 @@ class Answer(models.Model):
     def __str__(self):
         return self.respondent_admin
 
+
 class Profile(models.Model):
     user = models.OneToOneField(get_user_model(), on_delete=models.CASCADE)
     bio = models.TextField(blank=True, null=True)
     birth_date = models.DateField(blank=True, null=True)
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    profile_picture = models.ImageField(
+        upload_to="profile_pics/", blank=True, null=True
+    )
 
     def __str__(self):
         return f"{self.user.username} Profile"

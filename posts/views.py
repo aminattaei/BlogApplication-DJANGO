@@ -1,5 +1,5 @@
 from .models import Post, Comment, Contact
-from .form import CommentForm, UserRegisterForm
+from .form import CommentForm
 
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse_lazy
@@ -8,7 +8,6 @@ from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth import get_user_model
 from django.http import JsonResponse, HttpResponseRedirect
-from django.contrib.auth import authenticate
 from django.views.generic import (
     ListView,
     UpdateView,
@@ -19,8 +18,15 @@ from django.views.generic import (
 
 from rest_framework.parsers import JSONParser
 from rest_framework.request import Request
-from .serializers import PostSerializer, CommentSerializer, ContactSerializer
-from rest_framework import generics
+from .serializers import (
+    PostSerializer,
+    CommentSerializer,
+    ContactSerializer,
+    UserSerializer,
+)
+from rest_framework import generics, viewsets
+
+User = get_user_model()
 
 
 def approve_article(request, post_id):
@@ -28,10 +34,10 @@ def approve_article(request, post_id):
         post = Post.objects.get(id=post_id)
         post.is_approved = True
         post.save()
-        return redirect("post_list")
+        return redirect("Post_list")
     except Post.DoesNotExist:
         messages.error(request, "مقاله پیدا نشد.")
-        return redirect("post_list")
+        return redirect("Post_list")
 
 
 class BlogHomeListView(ListView):
@@ -244,13 +250,11 @@ def profile(request):
 
         approved_count = articles.filter(is_approved=True).count()
         rejected_count = articles.filter(is_approved=False).count()
-        pending_count = articles.filter(is_approved=None).count()
 
         context = {
             "user": request.user,
             "approved_count": approved_count,
             "rejected_count": rejected_count,
-            "pending_count": pending_count,
             "articles": articles,
         }
         return render(request, "posts/profile.html", context)
@@ -260,9 +264,12 @@ def profile(request):
         return redirect("Post_list")
 
 
-from rest_framework import generics
-
-
 class PostDetail(generics.RetrieveAPIView):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
+
+
+class User_list(generics.ListAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    
