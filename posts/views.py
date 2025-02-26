@@ -25,6 +25,10 @@ from .serializers import (
     UserSerializer,
 )
 from rest_framework import generics, viewsets
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import BasicAuthentication
+
+from drf_spectacular.utils import extend_schema
 
 User = get_user_model()
 
@@ -108,58 +112,25 @@ class AllUsersPostsView(TemplateView):
         return context
 
 
-def Post_list(request: Request):
-    try:
-        if request.method == "GET":
-            posts = Post.objects.all()
-            serializer = PostSerializer(posts, many=True)
-            return JsonResponse(serializer.data, safe=False)
-
-        elif request.method == "POST":
-            data = JSONParser().parse(request)
-            serializer = PostSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data, status=201)
-            return JsonResponse(serializer.errors, status=400)
-    except Exception as e:
-        return JsonResponse({"error": f"خطا در انجام درخواست: {str(e)}"}, status=500)
+class PostListViewSetApiView(viewsets.ModelViewSet):
+    
+    queryset = Post.objects.order_by("-created_time").all()
+    serializer_class = PostSerializer
+    permission_classes=[IsAuthenticated]
 
 
-def Comment_list(request: Request):
-    try:
-        if request.method == "GET":
-            comments = Comment.objects.all()
-            serializer = CommentSerializer(comments, many=True)
-            return JsonResponse(serializer.data, safe=False)
-
-        elif request.method == "POST":
-            data = JSONParser().parse(request)
-            serializer = CommentSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data, status=201)
-            return JsonResponse(serializer.errors, status=400)
-    except Exception as e:
-        return JsonResponse({"error": f"خطا در انجام درخواست: {str(e)}"}, status=500)
+class CommentListViewSetApiView(viewsets.ModelViewSet):
+    queryset = Comment.objects.all()
+    serializer_class = CommentSerializer
+    permission_classes=[IsAuthenticated]
+    
 
 
-def Contact_list(request: Request):
-    try:
-        if request.method == "GET":
-            contacts = Comment.objects.all()
-            serializer = ContactSerializer(contacts, many=True)
-            return JsonResponse(serializer.data, safe=False)
-
-        elif request.method == "POST":
-            data = JSONParser().parse(request)
-            serializer = ContactSerializer(data=data)
-            if serializer.is_valid():
-                serializer.save()
-                return JsonResponse(serializer.data, status=201)
-            return JsonResponse(serializer.errors, status=400)
-    except Exception as e:
-        return JsonResponse({"error": f"خطا در انجام درخواست: {str(e)}"}, status=500)
+class ContentListViewSetApiView(viewsets.ModelViewSet):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
+    permission_classes=[IsAuthenticated]
+    
 
 
 def Post_Detail(request, pk):
@@ -269,7 +240,10 @@ class PostDetail(generics.RetrieveAPIView):
     serializer_class = PostSerializer
 
 
-class User_list(generics.ListAPIView):
+
+
+class UserListViewSetsApiView(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes=[IsAuthenticated]
     

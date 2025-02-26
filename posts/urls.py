@@ -1,39 +1,43 @@
-from django.urls import path
-from .views import (
-    BlogHomeListView,
-    BlogHomeDeleteView,
-    BlogHomeUpdateView,
-    BlogHomeCreateView,
-    AllUsersPostsView,
-    ContactFormView,
-    ContactDoneTemplateView,
-    Post_list,
-    Comment_list,
-    Contact_list,
-    Post_Detail,
-    approve_article,
-    Search,
-    profile,
-    PostDetail,
-    User_list,
-)
+from django.urls import path, include
+from . import views
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register("posts", views.PostListViewSetApiView)
+router.register("comments", views.CommentListViewSetApiView)
+router.register("contents", views.ContentListViewSetApiView)
+router.register("users", views.UserListViewSetsApiView)
+
+
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 
 urlpatterns = [
-    path("", BlogHomeListView.as_view(), name="Post_list"),
-    path("<int:pk>/", Post_Detail, name="Post_detail"),
-    path("<int:pk>/delete/", BlogHomeDeleteView.as_view(), name="Post_delete"),
-    path("<int:pk>/update/", BlogHomeUpdateView.as_view(), name="Post_update"),
-    path("add/", BlogHomeCreateView.as_view(), name="Post_create"),
-    path("all_users_posts/", AllUsersPostsView.as_view(), name="Post_all_users_posts"),
-    path("contact/", ContactFormView.as_view(), name="contact_view"),
-    path("contact_done/", ContactDoneTemplateView.as_view(), name="success_content"),
-    path("approve_article/<int:post_id>/", approve_article, name="approve_article"),
-    path("search/", Search, name="search_results"),
-    path("api/posts/", Post_list, name="posts_api"),
-    path("api/contacts", Contact_list, name="Contact_list"),
-    path("api/comments", Comment_list, name="Contact_list"),
-    path("profile/", profile, name="profile"),
-    path("api/posts/<int:pk>/", PostDetail.as_view(), name="post-detail"),
-    path("api/users/", User_list.as_view()),
+    path("", views.BlogHomeListView.as_view(), name="Post_list"),
+    path("<int:pk>/", views.Post_Detail, name="Post_detail"),
+    path("<int:pk>/delete/", views.BlogHomeDeleteView.as_view(), name="Post_delete"),
+    path("<int:pk>/update/", views.BlogHomeUpdateView.as_view(), name="Post_update"),
+    path("add/", views.BlogHomeCreateView.as_view(), name="Post_create"),
+    path(
+        "all_users_posts/",
+        views.AllUsersPostsView.as_view(),
+        name="Post_all_users_posts",
+    ),
+    path("contact/", views.ContactFormView.as_view(), name="contact_view"),
+    path(
+        "contact_done/", views.ContactDoneTemplateView.as_view(), name="success_content"
+    ),
+    path(
+        "approve_article/<int:post_id>/", views.approve_article, name="approve_article"
+    ),
+    path("search/", views.Search, name="search_results"),
+    path("profile/", views.profile, name="profile"),
+    path("api/posts/<int:pk>/", views.PostDetail.as_view(), name="post-detail"),
+    path("api/", include(router.urls)),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/schema/swagger",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
 ]
